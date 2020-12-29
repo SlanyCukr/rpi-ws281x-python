@@ -1,13 +1,20 @@
 from flask import Flask
 
-import led_control
+from led_control import led_gradually_turn_on, led_turn_off
 
 app = Flask(__name__)
 
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+@app.route('/turn_on')
+def turn_on():
+    led_gradually_turn_on(500)
+    return 'Turned on!'
+
+
+@app.route('/turn_off')
+def turn_off():
+    led_turn_off()
+    return 'Turned off!'
 
 
 if __name__ == '__main__':
