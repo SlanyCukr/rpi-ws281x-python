@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/turn_on')
 def turn_on():
-    led_gradually_turn_on(500)
+    led_gradually_turn_on(300, 300)
     return 'Turned on!'
 
 

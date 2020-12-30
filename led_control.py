@@ -15,7 +15,7 @@ LED_COUNT      = 180      # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = 64     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 strip = get_strip()
@@ -78,13 +78,19 @@ def led_turn_off():
         if not functions_status['led_turn_off']:
             return
         strip.setPixelColor(i, black)
-    strip.show()
+        strip.show()
 
 
-def led_gradually_turn_on(wait_ms=50):
+def led_gradually_turn_on(timespan_sec1=300, timespan_sec2=300):
     """
     Gradually increase brightness.
     """
+    wait_ms1 = ((timespan_sec1 / 255.0) / strip.numPixels())
+    wait_ms2 = (timespan_sec2 / 255.0)
+
+    print(wait_ms1)
+    print(wait_ms2)
+
     only_run_one('led_gradually_turn_on')
 
     color_red = 0
@@ -96,6 +102,7 @@ def led_gradually_turn_on(wait_ms=50):
                 return
             color = Color(max(0, color_red + i + 1), max(0, color_green + i + 1), max(0, color_blue + i + 1))
             strip.setPixelColor(j, color)
+            time.sleep(wait_ms1)
             strip.show()
-        strip.show()
-        time.sleep(wait_ms / 1000.0)
+        time.sleep(wait_ms2)
+        print(f"Brightness: {i + 1}")
