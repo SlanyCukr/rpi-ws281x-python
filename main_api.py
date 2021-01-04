@@ -54,11 +54,11 @@ def rainbow():
 @app.route('/set_brightness', methods=['POST'])
 def set_brightness():
     global current_process
-    if 'brightness' not in request.args:
+    if 'brightness' not in request.form:
         return "No brightness supplied.", 400
 
     # set new brightness
-    brightness = int(request.args['brightness'])
+    brightness = int(request.form['brightness'])
     current_process.terminate()
     led_set_brightness(brightness)
 
