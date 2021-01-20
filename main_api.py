@@ -1,5 +1,6 @@
 from flask import Flask, request
 import multiprocessing
+import os
 
 from led_control import led_gradually_turn_on, led_turn_off, led_rainbow, led_set_brightness
 
@@ -69,12 +70,29 @@ def set_brightness():
     return "Brightness correctly set."
 
 
+@app.route('/log', methods=['POST'])
+def log():
+    if 'value' not in request.form:
+        return "No value supplied.", 400
+
+    value = request.form['value']
+
+    with open('values.txt', 'a') as values_file:
+        values_file.write(value + '\n')
+
+
 @app.route('/hello')
 def hello():
     return "Hello"
 
 
 if __name__ == '__main__':
+    # remove log file
+    try:
+        os.remove('values.txt')
+    except:
+        pass
+
     current_target = led_rainbow
     current_process = multiprocessing.Process(target=led_rainbow)
     current_process.start()
