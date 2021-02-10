@@ -2,7 +2,7 @@ from flask import Flask, request
 import multiprocessing
 import os
 
-from led_control import led_gradually_turn_on, led_turn_off, led_rainbow, led_set_brightness
+from led_control import led_gradually_turn_on, led_turn_off, led_rainbow, led_set_brightness, led_real_time
 
 app = Flask(__name__)
 current_process = None
@@ -79,6 +79,22 @@ def log():
 
     with open('values.txt', 'a') as values_file:
         values_file.write(value + '\n')
+
+
+@app.route('/real_time', methods=['POST'])
+def real_time():
+    if 'values' not in request.form:
+        return "No values supplied.", 400
+
+    values = request.form['values']
+    parsed_values = values.split(';')
+
+    # don't run looping animation while this function is executed
+    if current_process.is_alive():
+        current_process.terminate()
+
+    led_real_time(parsed_values)
+    return "Successfully displayed values."
 
 
 @app.route('/hello')

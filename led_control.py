@@ -1,4 +1,6 @@
 import time
+import random
+
 from rpi_ws281x import *
 
 
@@ -86,4 +88,21 @@ def led_gradually_turn_on(timespan_sec1=300, timespan_sec2=300):
                 strip.show()
         if wait_ms2 != 0:
             time.sleep(wait_ms2)
+        strip.show()
+
+
+def led_real_time(values: list):
+    """
+    Show colors in real time. (from client application)
+    """
+    for i in range(len(values)):
+        value = int(values[i])
+
+        """red, green, blue = 0, 0, 0
+        while red == 0 and green == 0 and blue == 0:
+            red = value if bool(random.getrandbits(1)) else 0
+            green = value if bool(random.getrandbits(1)) else 0
+            blue = value if bool(random.getrandbits(1)) else 0"""
+
+        strip.setPixelColor(i, Color(value, 0, 0))
         strip.show()
