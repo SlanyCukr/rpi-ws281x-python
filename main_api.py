@@ -85,15 +85,23 @@ def log():
 def real_time():
     if 'values' not in request.form:
         return "No values supplied.", 400
+    if 'sudden_change' not in request.form:
+        return "No sudden_change supplied.", 400
 
     values = request.form['values']
     parsed_values = values.split(';')
+
+    # handle empty array
+    if values == '':
+        parsed_values = []
 
     # don't run looping animation while this function is executed
     if current_process.is_alive():
         current_process.terminate()
 
-    led_real_time(parsed_values)
+    sudden_change = True if request.form['sudden_change'] == 'True' else False
+
+    led_real_time(parsed_values, sudden_change)
     return "Successfully displayed values."
 
 

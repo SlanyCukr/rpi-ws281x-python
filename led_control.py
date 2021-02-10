@@ -13,16 +13,36 @@ def get_strip() -> Adafruit_NeoPixel:
     return strip
 
 
+def generate_pretty_color():
+    colors = [random.randint(128, 255), random.randint(0,50), random.randint(0, 25)]
+
+    red_index = random.randint(0, 2)
+    color_red = colors[red_index]
+    del colors[red_index]
+
+    green_index = random.randint(0, 1)
+    color_green = colors[green_index]
+
+    color_blue = colors[green_index - 1]
+    return color_red, color_green, color_blue
+
+
 # LED strip configuration:
-LED_COUNT = 179      # Number of LED pixels.
+LED_COUNT = 178      # Number of LED pixels.
 LED_PIN = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 64     # Set to 0 for darkest and 255 for brightest
 LED_INVERT = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-strip = get_strip()
+RANDOM_COLOR_TTL = 100
 
+strip = get_strip()
+random_color_timer = 0
+
+random_color_red, random_color_green, random_color_blue = generate_pretty_color()
+
+random_dest_color_red, random_dest_color_green, random_dest_color_blue = generate_pretty_color()
 
 def led_set_brightness(brightness: int):
     """
@@ -91,18 +111,43 @@ def led_gradually_turn_on(timespan_sec1=300, timespan_sec2=300):
         strip.show()
 
 
-def led_real_time(values: list):
+def get_random_color(sudden_change: bool):
+    global random_dest_color_red, random_dest_color_green, random_dest_color_blue, random_color_timer, random_color_red, random_color_green, random_color_blue
+
+    if sudden_change:
+        random_color_red, random_color_green, random_color_blue = generate_pretty_color()
+
+    # slowly progress to destination color
+    if random_color_timer < RANDOM_COLOR_TTL:
+        random_color_red += (random_dest_color_red - random_color_red) / RANDOM_COLOR_TTL
+        random_color_green += (random_dest_color_green - random_color_green) / RANDOM_COLOR_TTL
+        random_color_blue += (random_dest_color_blue - random_color_blue) / RANDOM_COLOR_TTL
+        random_color_timer += 1
+    # or create new one
+    else:
+        random_dest_color_red, random_dest_color_green, random_dest_color_blue = generate_pretty_color()
+        random_color_timer = 0
+    # return current color
+    return Color(int(random_color_red), int(random_color_green), int(random_color_blue))
+
+def clamp(n, smallest, largest):
+    return max(smallest, min(n, largest))
+
+
+def led_real_time(values: list, sudden_change: bool):
     """
     Show colors in real time. (from client application)
     """
-    for i in range(len(values)):
-        value = int(values[i])
+    color = get_random_color(sudden_change)
 
-        """red, green, blue = 0, 0, 0
-        while red == 0 and green == 0 and blue == 0:
-            red = value if bool(random.getrandbits(1)) else 0
-            green = value if bool(random.getrandbits(1)) else 0
-            blue = value if bool(random.getrandbits(1)) else 0"""
+    values_len = len(values) if len(values) > 0 else -1
 
-        strip.setPixelColor(i, Color(value, 0, 0))
-        strip.show()
+    for i in range(LED_COUNT):
+        #value = int(values[i])
+
+        if i > values_len:
+            strip.setPixelColor(i, Color(0, 0, 0))
+            continue
+
+        strip.setPixelColor(i, color)
+    strip.show()
