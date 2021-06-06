@@ -130,22 +130,19 @@ def get_random_color(sudden_change: bool):
     # return current color
     return Color(int(random_color_red), int(random_color_green), int(random_color_blue))
 
+
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
 
-def led_real_time(values: list, sudden_change: bool):
+def led_real_time(num, values: [], sudden_change: bool):
     """
     Show colors in real time. (from client application)
     """
     color = get_random_color(sudden_change)
 
-    values_len = len(values) if len(values) > 0 else -1
-
     for i in range(LED_COUNT):
-        #value = int(values[i])
-
-        if i > values_len:
+        if i > num:
             strip.setPixelColor(i, Color(0, 0, 0))
             continue
 

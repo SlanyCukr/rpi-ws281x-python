@@ -1,12 +1,14 @@
 from flask import Flask, request
 import multiprocessing
 import os
+import socket
 
 from led_control import led_gradually_turn_on, led_turn_off, led_rainbow, led_set_brightness, led_real_time
 
 app = Flask(__name__)
 current_process = None
 current_target = None
+udp_server_process = None
 
 
 @app.route('/turn_on', methods=['POST'])
@@ -110,6 +112,31 @@ def hello():
     return "Hello"
 
 
+def udp_server():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_address = ('0.0.0.0', 5001)
+    s.bind(server_address)
+
+    print('UDP server is listening on port 5001.')
+    while True:
+        data, address = s.recvfrom(4096)
+
+        num = int(data[0] & 0x0F)
+        sudden_change = bool(data[0] >> 4)
+
+        print(sudden_change)
+
+        # don't run looping animation while this function is executed
+        if current_process.is_alive():
+            current_process.terminate()
+
+        led_real_time(num, data[1:], sudden_change)
+
+
+def run_api():
+    app.run('0.0.0.0', port=5000)
+
+
 if __name__ == '__main__':
     # remove log file
     try:
@@ -121,4 +148,11 @@ if __name__ == '__main__':
     current_process = multiprocessing.Process(target=led_rainbow)
     current_process.start()
 
-    app.run(host='0.0.0.0', port=5000)
+    #udp_server_process = multiprocessing.Process(target=udp_server)
+    #udp_server_process.start()
+
+    t = multiprocessing.Process(target=run_api)
+    t.start()
+    #app.run(host='0.0.0.0', port=5000)
+
+    udp_server()
