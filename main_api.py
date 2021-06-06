@@ -121,10 +121,8 @@ def udp_server():
     while True:
         data, address = s.recvfrom(4096)
 
-        num = int(data[0] & 0x0F)
-        sudden_change = bool(data[0] >> 4)
-
-        print(sudden_change)
+        num = int(data[0] & 0xEF)
+        sudden_change = bool(data[0] >> 7)
 
         # don't run looping animation while this function is executed
         if current_process.is_alive():
